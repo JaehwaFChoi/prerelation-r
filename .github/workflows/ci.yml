@@ -1,0 +1,143 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+
+# The package has no dependencies outside base R, so every job installs R
+# from the distribution archive rather than through a version-manager
+# action. See the note on apt-get below before editing any install step.
+
+jobs:
+  r-tests:
+    name: R test suite
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install R
+        run: |
+          set -e
+          # apt-get update's exit code is NOT a success signal. It returns
+          # non-zero when ANY configured repository fails, including
+          # third-party repositories this package does not use, while the
+          # Ubuntu indexes it does need refresh normally. Gating on it would
+          # abort a healthy environment (observed: exit 100 from an unrelated
+          # 403). So the update's exit code is allowed to pass and the
+          # INSTALL's exit code is the gate instead.
+          #
+          # This is not the `|| echo PASS` antipattern. That one replaces a
+          # signal with nothing. This replaces a weak early signal with a
+          # stronger later one: if the index did not refresh, the install
+          # fails, and `set -e` stops the job there. Do not "fix" this into
+          # either error.
+          sudo apt-get update || echo "apt-get update returned $? - not a gate, see comment"
+          sudo apt-get install -y r-base-core
+          Rscript --version
+
+      - name: Install the package
+        run: |
+          set -e
+          mkdir -p "$HOME/rlib"
+          R CMD INSTALL --library="$HOME/rlib" .
+
+      - name: Fetch the reference golden vectors
+        run: git clone --depth 1 https://github.com/JaehwaFChoi/prerelation.git ../prerelation
+
+      - name: Run the test suite against the golden vectors
+        env:
+          R_PRERELATION_LIB: ${{ github.workspace }}/../rlib
+        run: |
+          set -e
+          R_PRERELATION_LIB="$HOME/rlib" \
+            Rscript tests/run_tests.R ../prerelation/tests/golden
+
+  parity:
+    name: Cross-implementation parity
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install R
+        run: |
+          set -e
+          # See the comment in the r-tests job: the update's exit code is not
+          # a gate, the install's exit code is.
+          sudo apt-get update || echo "apt-get update returned $? - not a gate"
+          sudo apt-get install -y r-base-core
+          Rscript --version
+
+      - name: Install the package
+        run: |
+          set -e
+          mkdir -p "$HOME/rlib"
+          R CMD INSTALL --library="$HOME/rlib" .
+
+      - name: Fetch and install the reference implementations
+        run: |
+          set -e
+          git clone --depth 1 https://github.com/JaehwaFChoi/prerelation.git ../prerelation
+          git clone --depth 1 https://github.com/JaehwaFChoi/prerelation-js.git ../prerelation-js
+          python -m pip install --upgrade pip
+          pip install numpy
+          pip install -e ../prerelation
+
+      - name: Layer 1 - closed-form components on the six golden fixtures
+        env:
+          R_PRERELATION_LIB: /home/runner/rlib
+        run: |
+          set -e
+          cd tools/parity
+          Rscript parity_r.R "$GITHUB_WORKSPACE/../prerelation/tests/golden" /tmp/r_core.csv
+          python parity_driver.py "$GITHUB_WORKSPACE/../prerelation/tests/golden" /tmp/r_core.csv
+
+      - name: Layer 2 - pairwise scan
+        env:
+          R_PRERELATION_LIB: /home/runner/rlib
+        run: |
+          set -e
+          cd tools/parity
+          mkdir -p /tmp/scan
+          python scan_driver.py --setup /tmp/scan
+          Rscript scan_r.R /tmp/scan
+          python scan_driver.py --compare /tmp/scan
+
+      - name: Layer 3 - condense against the JavaScript reference
+        env:
+          R_PRERELATION_LIB: /home/runner/rlib
+          PRERELATION_JS_SRC: /home/runner/work/prerelation-r/prerelation-js/src/scan.mjs
+        run: |
+          set -e
+          cd tools/parity
+          Rscript condense_r.R graphs.json > /tmp/cond_r.txt
+          node condense_js.mjs graphs.json > /tmp/cond_js.txt
+          # A byte comparison, so a difference fails loudly rather than
+          # being summarised away.
+          diff /tmp/cond_r.txt /tmp/cond_js.txt
+          echo "condense: byte-identical to the JavaScript reference"
+
+  korean-gate:
+    name: No Korean characters in published files
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Scan every published file
+        # A Python character-range loop, never `grep -P`: grep's \p{Hangul}
+        # support depends on the build and the locale, and a `|| echo PASS`
+        # fallback around a grep that failed to run prints a false pass. The
+        # scanner below treats an unreadable file as an error and a
+        # zero-file scan as a failure.
+        run: python tools/parity/korean_gate.py '.R,.py,.md,.yml,.cff,.sh,.mjs,.json,DESCRIPTION,NAMESPACE,LICENSE,.gitignore,.Rbuildignore' .
