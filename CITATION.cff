@@ -25,7 +25,8 @@ identifiers:
     description: Concept DOI, resolves to the latest version
   - type: doi
     value: 10.5281/zenodo.22135974
-    description: DOI of version 0.1.0repository-code: "https://github.com/JaehwaFChoi/prerelation-r"
+    description: DOI of version 0.1.0
+repository-code: "https://github.com/JaehwaFChoi/prerelation-r"
 keywords:
   - psychometrics
   - prerequisite relations
