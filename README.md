@@ -1,5 +1,5 @@
 # prerelation (R)
-
+[![DOI](https://zenodo.org/badge/DOI/<CONCEPT-DOI>.svg)](https://doi.org/<CONCEPT-DOI>)
 An R implementation of the **prerelation coefficient** — a coefficient for
 prerequisite relations between traits reported on a common anchored scale —
 held in parity with the Python reference implementation
