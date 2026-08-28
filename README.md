@@ -1,5 +1,7 @@
 # prerelation (R)
-[![DOI](https://zenodo.org/badge/DOI/<CONCEPT-DOI>.svg)](https://doi.org/<CONCEPT-DOI>)
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22135973.svg)](https://doi.org/10.5281/zenodo.22135973)
+
 An R implementation of the **prerelation coefficient** — a coefficient for
 prerequisite relations between traits reported on a common anchored scale —
 held in parity with the Python reference implementation
@@ -225,9 +227,9 @@ R port.
 
 | | concept DOI (latest version) |
 |---|---|
+| `prerelation-r` (this package) | [10.5281/zenodo.22135973](https://doi.org/10.5281/zenodo.22135973) |
 | `prerelation` (Python, reference) | [10.5281/zenodo.22132819](https://doi.org/10.5281/zenodo.22132819) |
 | `prerelation-js` (JavaScript) | [10.5281/zenodo.22133624](https://doi.org/10.5281/zenodo.22133624) |
-| `prerelation-r` (this package) | assigned on the first archived release |
 
 Machine-readable metadata is in `CITATION.cff`.
 
