@@ -1,0 +1,18 @@
+Package: prerelation
+Type: Package
+Title: The Prerelation Coefficient and Its Directional Scan
+Version: 0.1.0
+Authors@R: person("Jaehwa", "Choi", email = "jaehwa.f.choi@gmail.com",
+    role = c("aut", "cre"))
+Description: A base-R implementation of the prerelation coefficient
+    Pi(X -> Y) = A1 * A2 on a common anchored [0, 1] scale, the prerelation
+    direction coefficient Delta = Pi(X -> Y) - Pi(Y -> X), the permutation
+    test, and the pairwise dominance scan with Benjamini-Hochberg control,
+    cycle detection, transitive reduction and equivalence-class
+    condensation. What the scan recovers is a dominance preorder over the
+    attributes, not a direct-prerequisite acyclic graph. The package is a
+    port of the Python reference implementation and is pinned to its
+    committed golden vectors; it uses no packages outside base R.
+License: MIT + file LICENSE
+Encoding: UTF-8
+NeedsCompilation: no

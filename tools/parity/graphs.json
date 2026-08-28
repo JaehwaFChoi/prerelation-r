@@ -1,0 +1,8 @@
+{
+  "chain_isolate":   {"nodes": ["a1","a2","a3","a4"], "edges": [["a1","a2"],["a1","a3"],["a2","a3"]]},
+  "two_cycle":       {"nodes": ["a","b","c"], "edges": [["a","b"],["b","a"],["b","c"]]},
+  "shared_node":     {"nodes": ["a1","a2","a3","a4","a5"], "edges": [["a1","a2"],["a2","a1"],["a2","a3"],["a3","a4"],["a4","a2"],["a4","a5"]]},
+  "no_edges":        {"nodes": ["p","q","r"], "edges": []},
+  "diamond_redundant": {"nodes": ["A","B","C","D"], "edges": [["A","B"],["B","D"],["A","C"],["C","D"],["A","D"]]},
+  "two_cycles_cross":{"nodes": ["a","b","c","d"], "edges": [["a","b"],["b","a"],["c","d"],["d","c"],["b","c"],["a","d"]]}
+}

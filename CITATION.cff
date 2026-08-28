@@ -1,0 +1,41 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "prerelation (R): the prerelation coefficient in R"
+abstract: >-
+  A base-R implementation of the prerelation coefficient, the prerelation
+  direction coefficient and the pairwise dominance scan, with no
+  dependencies outside base R, held in parity with the Python reference
+  implementation and the JavaScript implementation through their committed
+  golden vectors. Covers the coefficient and the scan; the ceiling
+  correction, plausible-value handling and the study runner are not
+  included.
+type: software
+authors:
+  - family-names: Choi
+    given-names: Jaehwa
+    email: jaechoi@gwu.edu
+    affiliation: George Washington University
+version: 0.1.0
+date-released: "2026-08-28"
+license: MIT
+repository-code: "https://github.com/JaehwaFChoi/prerelation-r"
+keywords:
+  - psychometrics
+  - prerequisite relations
+  - dominance preorder
+  - permutation test
+references:
+  - type: software
+    title: "prerelation: the prerelation coefficient"
+    authors:
+      - family-names: Choi
+        given-names: Jaehwa
+    doi: 10.5281/zenodo.22132819
+    repository-code: "https://github.com/JaehwaFChoi/prerelation"
+  - type: software
+    title: "prerelation-js: the prerelation coefficient in JavaScript"
+    authors:
+      - family-names: Choi
+        given-names: Jaehwa
+    doi: 10.5281/zenodo.22133624
+    repository-code: "https://github.com/JaehwaFChoi/prerelation-js"
