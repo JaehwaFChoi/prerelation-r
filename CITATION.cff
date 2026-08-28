@@ -18,6 +18,14 @@ authors:
 version: 0.1.0
 date-released: "2026-08-28"
 license: MIT
+   doi: <CONCEPT-DOI>
+   identifiers:
+     - type: doi
+       value: <CONCEPT-DOI>
+       description: Concept DOI, resolves to the latest version
+     - type: doi
+       value: <VERSION-DOI>
+       description: DOI of version 0.1.0
 repository-code: "https://github.com/JaehwaFChoi/prerelation-r"
 keywords:
   - psychometrics
