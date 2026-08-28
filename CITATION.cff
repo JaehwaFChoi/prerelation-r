@@ -18,15 +18,14 @@ authors:
 version: 0.1.0
 date-released: "2026-08-28"
 license: MIT
-   doi: <CONCEPT-DOI>
-   identifiers:
-     - type: doi
-       value: <CONCEPT-DOI>
-       description: Concept DOI, resolves to the latest version
-     - type: doi
-       value: <VERSION-DOI>
-       description: DOI of version 0.1.0
-repository-code: "https://github.com/JaehwaFChoi/prerelation-r"
+doi: 10.5281/zenodo.22135973
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.22135973
+    description: Concept DOI, resolves to the latest version
+  - type: doi
+    value: 10.5281/zenodo.22135974
+    description: DOI of version 0.1.0repository-code: "https://github.com/JaehwaFChoi/prerelation-r"
 keywords:
   - psychometrics
   - prerequisite relations
