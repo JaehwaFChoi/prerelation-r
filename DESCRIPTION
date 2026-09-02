@@ -1,7 +1,7 @@
 Package: prerelation
 Type: Package
 Title: The Prerelation Coefficient and Its Directional Scan
-Version: 0.1.0
+Version: 0.2.0
 Authors@R: person("Jaehwa", "Choi", email = "jaehwa.f.choi@gmail.com",
     role = c("aut", "cre"))
 Description: A base-R implementation of the prerelation coefficient
