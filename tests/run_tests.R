@@ -205,6 +205,79 @@ if (!nzchar(golden) || !dir.exists(golden)) {
   }
 }
 
+cat("\n[6] Reference class and envelope (base R, pbeta)\n")
+# Admissibility is the class B, a ceiling condition -- not dominance.
+a_u <- admissibility(uniform_reference())
+ok("Uniform is admissible (boundary point)", isTRUE(a_u$admissible))
+near("Uniform tail mass is delta", a_u$tail_mass, 0.05)
+a_21 <- admissibility(beta_reference(2, 1))
+ok("Beta(2,1) rejected (tail 0.0975)", !isTRUE(a_21$admissible) && abs(a_21$tail_mass - 0.0975) < 5e-5)
+a_82 <- admissibility(beta_reference(8, 2))
+ok("Beta(8,2) rejected (tail 0.0712)", !isTRUE(a_82$admissible) && abs(a_82$tail_mass - 0.0712) < 5e-5)
+F210 <- beta_reference(2, 10)
+ok("Beta(2,10) fails dominance at the floor: F(0.01) < 0.01", F210(0.01) < 0.01)
+a_210 <- admissibility(F210)
+ok("Beta(2,10) ACCEPTED by B (tail 1.03e-12)", isTRUE(a_210$admissible) && a_210$tail_mass < 1e-11)
+ok("point mass at 0 is admissible", isTRUE(admissibility(point_mass_reference(0))$admissible))
+
+# E-6a case 3c: the only tail-band point sits below its index, so the
+# positive part in D* is what keeps sup_q at 1 rather than above it.
+m3 <- 100L
+t3 <- c(seq(0.005, 0.90, length.out = m3 - 1L), 0.96)
+x3 <- rep(0.5, m3)
+y3 <- x3 * t3 * (1 - 0.05)
+e3 <- pi_envelope(x3, y3)
+ok("case 3c: n_tail == 1", e3$n_tail == 1L)
+ok("case 3c: D_star == 0", e3$D_star == 0)
+ok("case 3c: sup_q == 1", e3$sup_q == 1)
+
+if (nzchar(golden) && dir.exists(golden)) {
+  # Provenance: the 30 reference-class keys added to expected.json by E-6a
+  # (n_tail_band, D_star, sup_q, inf_q, PI_hi per fixture). Tolerance 1e-12.
+  expected_ref <- list(
+    product = list(n_tail_band = 21L, D_star = 0.024720479594442346,
+      sup_q = 0.9752795204055577, inf_q = 0.003676470588235294, PI_hi = 0.6323023317121026),
+    min = list(n_tail_band = 11L, D_star = 0.025073797152681543,
+      sup_q = 0.9749262028473185, inf_q = 0.005952380952380952, PI_hi = 0.268826016135615),
+    independent = list(n_tail_band = 15L, D_star = 0.02444612128830015,
+      sup_q = 0.9755538787116999, inf_q = 0.005154639175257732, PI_hi = 0.0),
+    equivalence = list(n_tail_band = 0L, D_star = 0.0,
+      sup_q = 0.0, inf_q = 0.0, PI_hi = 0.0),
+    partial_equivalence = list(n_tail_band = 28L, D_star = 0.10006445443418799,
+      sup_q = 0.899935545565812, inf_q = 0.005555555555555556, PI_hi = 0.4672085661488781),
+    ecpe_slice = list(n_tail_band = 21L, D_star = 0.11872185619096265,
+      sup_q = 0.8812781438090374, inf_q = 0.008403361344537815, PI_hi = 0.3864745417341465)
+  )
+  for (name in names(expected_ref)) {
+    f <- read_fixture(file.path(golden, sprintf("fixture_%s.csv", name)))
+    env <- pi_envelope(f$x, f$y)
+    ok(sprintf("%s/n_tail_band (%d)", name, env$n_tail),
+       env$n_tail == expected_ref[[name]]$n_tail_band)
+    for (key in c("D_star", "sup_q", "inf_q", "PI_hi")) {
+      near(sprintf("%s/%s", name, key), env[[key]], expected_ref[[name]][[key]])
+    }
+    ok(sprintf("%s/attained", name), isTRUE(env$attained))
+    core <- prereq_index(f$x, f$y)
+    ok(sprintf("%s/interior_q at Uniform == core q (bitwise)", name),
+       interior_q(f$x, f$y) == core$q)
+    ok(sprintf("%s/family member at Uniform == PI (bitwise)", name),
+       prereq_index_family(f$x, f$y)$PI == core$PI)
+    if (env$m > 0L) {
+      Fs <- attaining_reference(f$x, f$y)
+      ok(sprintf("%s/F0* admissible", name), isTRUE(admissibility(Fs)$admissible))
+      near(sprintf("%s/q(F0*) attains sup_q", name), interior_q(f$x, f$y, Fs), env$sup_q)
+      near(sprintf("%s/q(point mass) == inf_q", name),
+           interior_q(f$x, f$y, point_mass_reference(0)), env$inf_q)
+      for (F in list(F210, beta_reference(1, 2), point_mass_reference(0))) {
+        ok(sprintf("%s/q(%s) <= sup_q", name, attr(F, "reference_name")),
+           interior_q(f$x, f$y, F) <= env$sup_q + 1e-12)
+      }
+    }
+  }
+} else {
+  skip("reference-class golden keys", "no golden directory supplied")
+}
+
 cat(sprintf("\npassed %d, failed %d, skipped %d\n", .n_pass, .n_fail, .n_skip))
 if (.n_skip > 0L) cat("NOTE: skipped checks are not passes.\n")
 if (.n_fail > 0L) quit(status = 1L)

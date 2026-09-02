@@ -26,6 +26,7 @@ import sys
 import numpy as np
 
 from prerelation.core import direction, prereq_index
+from prerelation.reference import pi_envelope
 from prerelation.core import _baseline_mean  # noqa: F401  (definition check)
 
 DELTA = 0.05
@@ -35,7 +36,7 @@ FIXTURES = ["product", "min", "independent", "equivalence",
             "partial_equivalence", "ecpe_slice"]
 
 # Quantities compared at the tolerance, and quantities compared exactly.
-EXACT = {"n", "n_interior", "perm_p"}
+EXACT = {"n", "n_interior", "perm_p", "n_tail_band"}
 
 
 def read_fixture(path):
@@ -77,6 +78,7 @@ def components(x, y, P):
     obs = res["PI"]
     cnt = sum(prereq_index(x, y[P[r]])["PI"] >= obs for r in range(P.shape[0]))
     perm_p = (cnt + 1) / (P.shape[0] + 1)
+    env = pi_envelope(x, y)
 
     return {
         "n": float(n),
@@ -94,6 +96,12 @@ def components(x, y, P):
         "PI_reverse": rev["PI"],
         "Delta": dl[0],
         "perm_p": perm_p,
+        # reference class and envelope (E-6a golden keys)
+        "n_tail_band": float(env["n_tail"]),
+        "D_star": env["D_star"],
+        "sup_q": env["sup_q"],
+        "inf_q": env["inf_q"],
+        "PI_hi": env["PI_hi"],
     }
 
 
@@ -124,6 +132,9 @@ def main():
     ap.add_argument("--tol", type=float, default=1e-12)
     ap.add_argument("--expected", default=None,
                     help="expected.json to cross-check the Python side against")
+    ap.add_argument("--label", default="R", help="name of the other language")
+    ap.add_argument("--table", default=None,
+                    help="write the per-quantity table as CSV to this path")
     args = ap.parse_args()
 
     r_values = read_r_output(args.r_out)
@@ -179,13 +190,22 @@ def main():
     width = max(len(r[1]) for r in rows) if rows else 10
     print()
     print(f"{'fixture':<20}{'quantity':<{width + 2}}"
-          f"{'python':>24}{'R':>24}{'abs diff':>12}  verdict")
+          f"{'python':>24}{args.label:>24}{'abs diff':>12}  verdict")
     print("-" * (20 + width + 2 + 24 + 24 + 12 + 10))
     for name, key, pv, rv, diff, verdict in rows:
         print(f"{name:<20}{key:<{width + 2}}{pv:>24.17g}{rv:>24.17g}"
               f"{diff:>12.3e}  {verdict}")
 
     print("-" * (20 + width + 2 + 24 + 24 + 12 + 10))
+    if args.table:
+        with open(args.table, "w", newline="") as fh:
+            w = csv.writer(fh)
+            w.writerow(["fixture", "quantity", "python", args.label,
+                        "abs_diff", "bit_identical", "tolerance", "verdict"])
+            for name, key, pv, rv, diff, verdict in rows:
+                w.writerow([name, key, repr(pv), repr(rv), f"{diff:.3e}",
+                            int(pv == rv),
+                            "exact" if key in EXACT else f"{args.tol:g}", verdict])
     print(f"quantities compared      : {len(rows)}")
     print(f"bit-identical            : {n_bit_identical}")
     print(f"failures                 : {n_fail}")

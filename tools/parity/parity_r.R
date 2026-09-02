@@ -1,7 +1,7 @@
 # parity_r.R -- R side of the cross-language parity harness.
 #
-# Computes, for every committed golden fixture, the fifteen quantities that
-# expected.json records, and writes them as full-precision text (%.17g) so
+# Computes, for every committed golden fixture, the twenty quantities that
+# expected.json records (fifteen core, five reference-class), and writes them as full-precision text (%.17g) so
 # that the Python driver reads back exactly the float64 R produced. The
 # fixture CSV and the permutation index matrix are read from the same files
 # the Python side reads, so both languages consume identical bytes.
@@ -39,6 +39,7 @@ components <- function(x, y, P) {
   p1_top <- if (sum(x_top) > 0) mean(ceil_mask[x_top]) else 1
 
   pp <- perm_pvalue(x, y, perm_indices = P)
+  env <- pi_envelope(x, y)
 
   list(n = n, v = v, v0 = v0, A1 = res$A1,
        mass_ceiling_band = mean(ceil_mask),
@@ -46,7 +47,10 @@ components <- function(x, y, P) {
        n_interior = sum(!ceil_mask),
        p1_top = p1_top, q = res$q, ell = res$ell, A2 = res$A2,
        PI = res$PI, PI_reverse = rev$PI, Delta = dl$delta_stat,
-       perm_p = pp$p_value)
+       perm_p = pp$p_value,
+       # reference class and envelope (E-6a golden keys)
+       n_tail_band = env$n_tail, D_star = env$D_star, sup_q = env$sup_q,
+       inf_q = env$inf_q, PI_hi = env$PI_hi)
 }
 
 lines <- c("fixture,quantity,value")

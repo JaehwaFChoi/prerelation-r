@@ -32,7 +32,7 @@ package. What it contains:
 
 | | |
 |---|---|
-| **present** | `prereq_index` (with all five components), `direction`, `perm_pvalue`, the pairwise scan with Benjamini-Hochberg control, cycle detection, transitive reduction, `condense` (strongly connected components to a quotient order), the golden-vector readers |
+| **present** | `prereq_index` (with all five components), `direction`, `perm_pvalue`, the pairwise scan with Benjamini-Hochberg control, cycle detection, transitive reduction, `condense` (strongly connected components to a quotient order), the golden-vector readers; the admissible reference class (`admissibility`), the interior component at a declared reference (`interior_q`), the family member (`prereq_index_family`) and the exact upper envelope (`pi_envelope`), with `uniform_reference`, `beta_reference` (base `pbeta`), `point_mass_reference` and `attaining_reference` |
 | **absent** | `ceiling_fit` and the postulate correction, `pv_correct` (plausible-value handling — there is no R counterpart for the grid posteriors it consumes), `run_study` |
 
 The absent pieces are absent by decision, not by oversight. Use the Python
